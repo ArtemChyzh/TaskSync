@@ -1,5 +1,6 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import joinedload
 import os
 
 app = Flask(__name__)
@@ -21,5 +22,26 @@ class UserRoom(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey(Room.id), primary_key=True, index=True)
     user = db.relationship('User', backref='user_rooms')
 
+@app.route('/', methods=["GET"])
+def test():
+    return jsonify({
+        "room": "Hello, "
+    })
+
+@app.route('/rooms', methods=["GET"])
+def get_rooms():
+    rooms = Room.query.options(joinedload(Room.users)).all()
+    
+    result = []
+    for room in rooms:
+        user_ids = [user_room.user_id for user_room in room.users]
+        result.append({
+            'room_id': room.id,
+            'code': room.code,
+            'user_ids': user_ids
+        })
+    
+    return jsonify(result)
+
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

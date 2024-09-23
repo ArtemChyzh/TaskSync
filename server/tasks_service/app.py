@@ -20,5 +20,25 @@ class Task(db.Model):
     status = db.Column(db.Enum(TaskStatus), nullable=False)
     deadline = db.Column(db.DateTime, nullable=False)
 
-if __name__ == "__main__":
+@app.route("/", methods=["GET"])
+def test():
+    return jsonify({
+        "task": "world!"
+    })
+
+@app.route('/tasks', methods=["GET"])
+def get_tasks():
+    tasks = Task.query.all()
+    return jsonify([
+        {
+            'id': task.id,
+            'user_id': task.user_id,
+            'room_id': task.room_id,
+            'title': task.title,
+            'description': task.description,
+            'status': task.status
+        } for task in tasks
+    ])
+
+if __name__ == '__main__':
     app.run()
