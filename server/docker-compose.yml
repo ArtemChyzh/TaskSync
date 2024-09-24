@@ -1,4 +1,17 @@
+version: '3.8'
+
 services:
+  db_users:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_db
+    volumes:
+      - postgres_data_users:/var/lib/postgresql/data
+    ports:
+      - "5431:5432"
+
   db_rooms:
     image: postgres:13
     environment:
@@ -21,11 +34,19 @@ services:
     ports:
       - "5434:5432"
 
+  users_service:
+    build: ./users_service
+    environment:
+      DATABASE_URL: postgresql://username:password@db_users:5432/users_db
+    depends_on:
+      - db_users
+    ports:
+      - "5001:5000"
+
   rooms_service:
     build: ./rooms_service
     environment:
       DATABASE_URL: postgresql://username:password@db_rooms:5432/rooms_db
-      FLASK_ENV: development
     depends_on:
       - db_rooms
     ports:
@@ -35,7 +56,6 @@ services:
     build: ./tasks_service
     environment:
       DATABASE_URL: postgresql://username:password@db_tasks:5432/tasks_db
-      FLASK_ENV: development
     depends_on:
       - db_tasks
     ports:
@@ -43,14 +63,14 @@ services:
 
   api_gateway:
     build: ./api_gateway
-    environment:
-      FLASK_ENV: development
     ports:
       - "5000:5000"
     depends_on:
+      - users_service
       - rooms_service
       - tasks_service
 
 volumes:
+  postgres_data_users:
   postgres_data_rooms:
   postgres_data_tasks:
