@@ -56,7 +56,7 @@ def get_task(id:int):
 @app.route('/tasks', methods=["POST"])
 def create_task():
     data = request.get_json()
-    if ["user_id", "room_id", "title"] in data:
+    if not all(key in data for key in ["user_id", "room_id", "title"]):
         return jsonify({"error": "Invalid data was sent. 'user_id', 'room_id', 'title' are required", "service": "tasks"})
     try:
         task = Task(user_id=data["user_id"], room_id=data["room_id"], title=data["title"])
@@ -66,7 +66,7 @@ def create_task():
         db.session.commit()
         return jsonify({"message": "Task created succesfully"}), 201
     except Exception as e:
-        db.session.rollback
+        db.session.rollback()
         return jsonify({"error": str(e), "service": "tasks"}), 500
     
 @app.route("/tasks/<int:id>", methods=["PUT"])
