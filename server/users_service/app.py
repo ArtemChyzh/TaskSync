@@ -77,7 +77,7 @@ def update_user(id: int):
 def create_user():
     data = request.get_json()
     if "username" not in data or "password" not in data:
-        return jsonify({"error": "Invalid data was sent to users_service. 'username' and 'password' are required"}), 400
+        return jsonify({"error": "Invalid data was sent. 'username' and 'password' are required", "service": "users"}), 400
     if User.query.filter_by(username=data["username"]).first():
         return jsonify({"error": "Username already exists"}), 409
     try:
@@ -89,7 +89,6 @@ def create_user():
     except Exception as e:
         return jsonify({"error": str(e), "service": "users"}), 500
 
-    
 
 if __name__ == "__main__":
     app.run(debug=True)
