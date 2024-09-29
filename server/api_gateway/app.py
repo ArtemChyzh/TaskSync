@@ -3,9 +3,9 @@ import requests
 
 app = Flask(__name__)
 
-USERS_SERVICE_URL = "http://users_service/"
-ROOMS_SERVICE_URL = "http://rooms_service/"
-TASKS_SERVICE_URL = "http://tasks_service/"
+USERS_SERVICE_URL = "http://users_service:5000/"
+ROOMS_SERVICE_URL = "http://rooms_service:5000/"
+TASKS_SERVICE_URL = "http://tasks_service:5000/"
 
 
 @app.route('/')

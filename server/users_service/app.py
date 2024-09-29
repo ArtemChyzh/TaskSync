@@ -5,12 +5,17 @@ import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'postgresql://username:password@db_users/users_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+
+def init_db():
+    with app.app_context():
+        db.create_all()
 
 @app.route("/users", methods=["GET"])
 def get_users():
@@ -34,7 +39,7 @@ def get_user(id: int):
         }), 200
     except Exception as e: return jsonify({ "error": str(e), "service": "users" }), 500
 
-@app.route("users/<string:username>", methods=["GET"])
+@app.route("/users/<string:username>", methods=["GET"])
 def get_user(username: str):
     user = User.query.filter_by(username=username).first()
     if not user: return jsonify({ "error": "User not found" }), 404
@@ -47,7 +52,7 @@ def get_user(username: str):
     except Exception as e:
         return jsonify({"error": str(e), "service": "users"}), 500
 
-@app.route("users/<int:id>", methods=["DELETE"])
+@app.route("/users/<int:id>", methods=["DELETE"])
 def delete_user(id: int):
     user = User.query.get(id)
     if not user: return jsonify({ "error": "User not found" }), 404
@@ -59,7 +64,7 @@ def delete_user(id: int):
         db.session.rollback()
         return jsonify({"error": str(e), "service": "users" }), 500
 
-@app.route("users/<int:id>", methods=["PUT"])
+@app.route("/users/<int:id>", methods=["PUT"])
 def update_user(id: int):
     user = User.query.get(id)
     if not user: return jsonify({ "error": "User not found" }), 404
@@ -91,4 +96,5 @@ def create_user():
 
 
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
