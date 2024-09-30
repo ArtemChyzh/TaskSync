@@ -1,0 +1,26 @@
+services:
+  users_service:
+    container_name: users_service
+    image: docker-hub-flask_live_app:1.0.0
+    build: ./users_service
+    ports:
+      - "1000:1000"
+    environment:
+      - DB_USERS=postgresql://postgres:postgres@users_db:5432/users_db
+    depends_on:
+      - users_db
+  
+  users_db:
+    container_name: users_db
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=users_db
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+volumes:
+  users_data: {}
