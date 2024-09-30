@@ -36,7 +36,7 @@ def create_user():
     try:
         data = request.get_json()
         if "username" not in data or "email" not in data or "password" not in data:
-            return make_response(jsonify({"error": "Invalid data. \"username\", \"email\" and \"password\" are necessary."}), 422)
+            return make_response(jsonify({"error": "Invalid data. 'username', 'email' and 'password' are necessary."}), 422)
         new_user = User(
             username=data["username"],
             email=data["email"],
@@ -85,6 +85,7 @@ def update_user(id):
             if "username" in data: user.username = data["username"]
             if "email" in data: user.email = data["email"]
             if "password" in data: user.password_hash = generate_password_hash(data["password"])
+            db.session.commit()
             return make_response(jsonify({"message": "User updated successfully."}), 200)
         return make_response(jsonify({"error": "User is not found."}), 404)
     except Exception as e:

@@ -1,7 +1,7 @@
 services:
   users_service:
     container_name: users_service
-    image: docker-hub-flask_live_app:1.0.0
+    image: users-service:1.0.0
     build: ./users_service
     ports:
       - "1000:1000"
@@ -14,7 +14,7 @@ services:
     container_name: users_db
     image: postgres:13
     ports:
-      - "5432:5432"
+      - "1432:1432"
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
@@ -22,5 +22,29 @@ services:
     volumes:
       - users_data:/var/lib/postgresql/data
 
+  tasks_service:
+    container_name: tasks_service
+    image: tasks-service:1.0.0
+    build: ./tasks_service
+    ports:
+      - "2000:2000"
+    environment:
+      - DB_TASKS=postgresql://postgres:postgres@tasks_db:5432/tasks_db
+    depends_on:
+      - tasks_db
+    
+  tasks_db:
+    container_name: tasks_db
+    image: postgres:13
+    ports:
+      - "2432:2432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=tasks_db
+    volumes:
+      - tasks_data:/var/lib/postgresql/data
+
 volumes:
   users_data: {}
+  tasks_data: {}
