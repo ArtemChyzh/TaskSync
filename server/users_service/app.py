@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from os import environ
 from werkzeug.security import generate_password_hash
 
@@ -36,7 +37,10 @@ def create_user():
     try:
         data = request.get_json()
         if "username" not in data or "email" not in data or "password" not in data:
-            return make_response(jsonify({"error": "Invalid data. 'username', 'email' and 'password' are necessary."}), 422)
+            return make_response(jsonify({"error": "Invalid data. 'username', 'email' and 'password' are required."}), 422)
+        user = User.query.filter(or_(User.username==data["username"], User.email==data["email"])).first()
+        if user:
+            return make_response(jsonify({"error": "User already exists. 'username' and 'email' must be unique."}), 409)
         new_user = User(
             username=data["username"],
             email=data["email"],
@@ -44,7 +48,7 @@ def create_user():
         )
         db.session.add(new_user)
         db.session.commit()
-        return make_response(jsonify({"message": "User created successfully."}), 201)
+        return make_response(jsonify({"message": "User created successfully.", "user_id": new_user.id}), 201)
     except Exception as e:
         return make_response(jsonify({"error": str(e)}), 500)
         

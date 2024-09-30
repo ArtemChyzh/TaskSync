@@ -28,4 +28,81 @@ with app.app_context():
 
 @app.route("/", methods=["GET"])
 def test():
-    return make_response(jsonify({"message": "Test route"}), 200)
+    return make_response(jsonify({
+        "message": "Test route"
+        }), 200)
+
+@app.route("/rooms", methods=["POST"])
+def create_room():
+    try:
+        data = request.get_json()
+        if "user_id" not in data or "code" not in data:
+            return make_response(jsonify({"error": "Invalid data. 'user_id' and 'code' are required"}), 422)
+        room = Room.query.filter_by(code=data["code"]).first()
+        if room:
+            return make_response(jsonify({"error": "Room already exists. 'code' must be unique"}), 409)
+        new_room = Room(
+            user_id=data["user_id"],
+            code=data["code"],
+            title=data.get("title", data["code"]),
+            description=data.get("description", "")
+        )
+        db.session.add(new_room)
+        db.session.commit()
+        return make_response(jsonify({"message": "Room created successfully.", "room_id": new_room.id}), 201)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms", methods=["GET"])
+def get_rooms():
+    try:
+        rooms = Room.query.all()
+        return make_response(jsonify([room.json() for room in rooms]), 200)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}))
+    
+@app.route("/rooms/<int:id>", methods=["GET"])
+def get_room_by_id(id:int):
+    try:
+        room = Room.query.get(id)
+        if room:
+            return make_response(jsonify(room.json()), 200)
+        return make_response(jsonify({"error": "Room is not found."}), 404)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms/code/<string:code>", methods=["GET"])
+def get_room_by_code(code:str):
+    try:
+        room = Room.query.filter_by(code=code).first()
+        if room:
+            return make_response(jsonify(room.json()), 200)
+        return make_response(jsonify({"error": "Room is not found"}), 404)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms/<int:id>", methods=["PUT"])
+def update_room(id:int):
+    try:
+        room = Room.query.get(id)
+        if not room:
+            return make_response(jsonify({"error": "Room not found."}), 404)
+        data = request.get_json()
+        if "title" in data: room.title=data["title"]
+        if "description" in data: room.description=data["description"]
+        db.session.commit()
+        return make_response(jsonify({"message": "Room updated successfully."}), 200)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms/<int:id>", methods=["DELETE"])
+def delete_room(id:int):
+    try:
+        room = Room.query.get(id)
+        if not room:
+            return make_response(jsonify({"error": "Room is not found."}), 404)
+        db.session.delete(room)
+        db.session.commit()
+        return make_response(jsonify({"message": "Room deleted successfully."}), 204)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)

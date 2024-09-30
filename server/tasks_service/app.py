@@ -57,7 +57,7 @@ def create_task():
     try:
         data = request.get_json()
         if "title" not in data or "user_id" not in data or "room_id" not in data:
-            return make_response(jsonify({"error": "Invalid data. 'title', 'user_id' and 'room_id' are necessary"}), 422)
+            return make_response(jsonify({"error": "Invalid data. 'title', 'user_id' and 'room_id' are required"}), 422)
         new_task = Task(
             title=data["title"],
             user_id=data["user_id"],
@@ -68,7 +68,7 @@ def create_task():
         )
         db.session.add(new_task)
         db.session.commit()
-        return make_response(jsonify({"message": "Task created successfully"}), 201)
+        return make_response(jsonify({"message": "Task created successfully", "task_id": new_task.id}), 201)
     except Exception as e:
         return make_response(jsonify({"error": str(e)}), 500)
 
