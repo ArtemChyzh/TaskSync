@@ -11,7 +11,7 @@ db = SQLAlchemy(app)
 class Status(Enum):
     pending = (1, "Pending.")
     in_progress = (2, "In progress...")
-    completed= (3, "Completed\u2713")
+    completed= (3, "Completed!")
 
     def __new__(cls, value, text):
         obj = object.__new__(cls)
@@ -27,7 +27,7 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, nullable=False)
     room_id = db.Column(db.Integer, nullable=False)
     deadline = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc) + timedelta(days=7))
-    status = db.Column(db.Enum(Status), nullable=False, default=Status.pending)
+    status = db.Column(db.Enum(Status), nullable=False, default=Status.pending.value)
 
     def json(self):
         return {
