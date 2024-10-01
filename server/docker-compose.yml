@@ -62,7 +62,31 @@ services:
     volumes:
       - rooms_data:/var/lib/postgresql/data
 
+  keys_service:
+    container_name: keys_service
+    image: keys-service:1.0.0
+    build: ./foreign_keys_service
+    ports:
+      - "4000:4000"
+    environment:
+      - DB_KEYS=postgresql://postgres:postgres@keys_db:5432/keys_db
+    depends_on:
+      - keys_db
+      - rooms_service
+      - users_service
+
+  keys_db:
+    container_name: keys_db
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=keys_db  
+    volumes:
+      - keys_data:/var/lib/postgresql/data
+
 volumes:
   users_data: {}
   tasks_data: {}
   rooms_data: {}
+  keys_data: {}
