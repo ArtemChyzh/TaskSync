@@ -3,10 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from os import environ
 from werkzeug.security import generate_password_hash
+import requests
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("DB_USERS")
 db = SQLAlchemy(app)
+
+KEYS_SERVICE = "http://keys_service:4000"
 
 class User(db.Model):
     __tablename__ = "users"
@@ -96,13 +99,17 @@ def update_user(id):
         return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/users/<int:id>", methods=["DELETE"])
-def delete_user(id):
+async def delete_user(id):
     try:
         user = User.query.get(id)
         if user:
             db.session.delete(user)
             db.session.commit()
-            return make_response(jsonify({"message": "User deleted successfully."}), 204)
+            response =  requests.delete(f"{KEYS_SERVICE}/users_rooms/user/{id}")
+            if response.status_code < 300 and response.status_code >= 200:
+                return make_response(jsonify({"message": "User deleted successfully."}), 204)
+            else:
+                return make_response(jsonify(response.json()), response.status_code)
         return make_response(jsonify({"error": "User is not found."}), 404)
     except Exception as e:
         return make_response(jsonify({"error": str(e)}))

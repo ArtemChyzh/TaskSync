@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 from os import environ
+import requests
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("DB_ROOMS")
 db = SQLAlchemy(app)
+
+KEYS_SERVICE = "http://keys_service:4000"
 
 class Room(db.Model):
     __tablename__ = "rooms"
@@ -103,6 +106,10 @@ def delete_room(id:int):
             return make_response(jsonify({"error": "Room is not found."}), 404)
         db.session.delete(room)
         db.session.commit()
-        return make_response(jsonify({"message": "Room deleted successfully."}), 204)
+        response = requests.delete(f"{KEYS_SERVICE}/users_rooms/room/{id}")
+        if response.status_code < 300 and response.status_code >= 200:
+            return make_response(jsonify({"message": "Room deleted successfully."}), 204)
+        else:
+            return make_response(jsonify(response.json()), response.status_code)
     except Exception as e:
         return make_response(jsonify({"error": str(e)}), 500)

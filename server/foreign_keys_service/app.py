@@ -58,6 +58,7 @@ def join_user():
         db.session.commit()
         return make_response(jsonify({"message": "User joined successfully"}), 201)
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/users_rooms/room/<int:room_id>", methods=["GET"])
@@ -94,10 +95,14 @@ def delete_relation():
 
         remaining_users = UserRoom.query.filter_by(room_id=data["room_id"]).all()
         if not remaining_users:
-            requests.delete(f"{ROOMS_SERVICE}/rooms/{data.get('room_id')}").all()
-            return make_response(jsonify({"message": "User removed and room deleted as it had no users"}))
+            response = requests.delete(f"{ROOMS_SERVICE}/rooms/{data.get('room_id')}")
+            if response.status_code < 300 and response.status_code >= 200:
+                return make_response(jsonify({"message": "User removed and room deleted as it had no users"}))
+            else:
+                return make_response(jsonify(response.json()), response.status_code)
         return make_response(jsonify({"message": "User removed from room successfully"}), 200)
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/users_rooms/user/<int:user_id>", methods=["DELETE"])
@@ -110,6 +115,7 @@ def delete_all_relations_for_user(user_id):
         else:
             return make_response(jsonify({"message": "No relations found."}), 404)
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
 
 @app.route("/users_rooms/room/<int:room_id>", methods=["DELETE"])
@@ -123,4 +129,5 @@ def delete_all_relations_for_room(room_id):
         else:
             return make_response(jsonify({"message": "No relations found for this room"}), 404)
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
