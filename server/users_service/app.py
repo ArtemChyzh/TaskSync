@@ -73,7 +73,7 @@ def get_user_by_id(id):
     except Exception as e:
         return make_response(jsonify({"error": str(e)}), 500)
     
-@app.route("/users/<string:username>", methods=["GET"])
+@app.route("/user/<string:username>", methods=["GET"])
 def get_user_by_username(username):
     try:
         user = User.query.filter_by(username=username).first()

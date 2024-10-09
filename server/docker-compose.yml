@@ -85,6 +85,18 @@ services:
     volumes:
       - keys_data:/var/lib/postgresql/data
 
+  api_gateway:
+    container_name: api_gateway
+    image: api-gateway:1.0.0
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - users_service
+      - tasks_service
+      - rooms_service
+      - foreign_keys_service
+
 volumes:
   users_data: {}
   tasks_data: {}
