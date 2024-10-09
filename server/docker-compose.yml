@@ -95,7 +95,7 @@ services:
       - users_service
       - tasks_service
       - rooms_service
-      - foreign_keys_service
+      - keys_service
 
 volumes:
   users_data: {}
