@@ -6,3 +6,7 @@ A minimalistic client for server requests (**C#** and **WPF**) has also been cre
 
 ## Server
 Each microservice is lifted using the built-in flask server. The Flask framework is used for request management. Databases are based on PostgreSQL.
+
+## Clients
+# Test client
+To work with the client, enter the link to the desired website, select a method, and enter the JSON for the request in the first input field. Click the button to send the request. As a result, you will see the JSON result in the second field and the response status.
