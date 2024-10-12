@@ -288,3 +288,232 @@
 }
 ```
 </details>
+
+### Завдвння
+<details>
+<summary>
+
+**Створення завдання**
+
+</summary>
+
+- **URL:** `/api/tasks`
+- **Метод:** ==POST==
+- **Опис:** Публікація нового завдання
+**Параметри запиту**
+```json
+{
+    "title": "Default",
+    "user_id": 1,
+    "room_id": 1,
+    "deadline": "01-04-2024",
+    "status": 3 
+}
+```
+
+**Відповіді**
+**201 *Created***
+```json
+{
+    "message": "Task creared successfully",
+    "task_id": 6
+}
+```
+**422 *Unprocessable value***
+```json
+{
+    "error": "Invalid data. 'title', 'user_id' and 'room_id' are required"
+}
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</detais>
+
+<details>
+<summary>
+
+**Отримання всіх завдань**
+
+</summary>
+
+- **URL:** `/api/tasks`
+- **Методи:** ==GET==
+- **Опис:** Отримує список всіх завдань
+
+**Відповіді**
+**200 *OK***
+```json
+[
+  {
+    "id": 1,
+    "title": "Fix the bug in the authentication system",
+    "description": "There's a critical bug in the login feature that prevents users from logging in under certain conditions.",
+    "user_id": 2,
+    "room_id": 1,
+    "deadline": "2024-10-20T10:00:00Z",
+    "status": "pending"
+  },
+  {
+    "id": 2,
+    "title": "Create project documentation",
+    "description": "Document the API endpoints, data models, and overall project architecture for future reference.",
+    "user_id": 4,
+    "room_id": 3,
+    "deadline": "2024-10-22T16:30:00Z",
+    "status": "in_progress"
+  },
+  {
+    "id": 3,
+    "title": "Design new homepage layout",
+    "description": "Work on the redesign of the main website page to improve user experience and increase conversion rates.",
+    "user_id": 3,
+    "room_id": 2,
+    "deadline": "2024-10-25T08:00:00Z",
+    "status": "pending"
+  },
+  {
+    "id": 4,
+    "title": "Optimize database queries",
+    "description": "Refactor database queries in the tasks service to improve performance for larger datasets.",
+    "user_id": 1,
+    "room_id": 4,
+    "deadline": "2024-10-23T12:00:00Z",
+    "status": "completed"
+  },
+  {
+    "id": 5,
+    "title": "Prepare user feedback report",
+    "description": "Analyze feedback from beta testers and compile a report on their suggestions and concerns.",
+    "user_id": 5,
+    "room_id": 2,
+    "deadline": "2024-10-28T14:45:00Z",
+    "status": "pending"
+  }
+]
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Отримання конкретного завдання за ID**
+
+</summary>
+
+- **URL:** `/api/tasks/{task_id}`
+- **Методи:** ==GET==
+- **Опис:** Отримує конкретне завдання за його ID.
+
+**Відповіді**
+- **200 *OK***
+```json
+{
+  "id": 1,
+  "title": "Fix the bug in the authentication system",
+  "description": "There's a critical bug in the login feature that prevents users from logging in under certain conditions.",
+  "user_id": 2,
+  "room_id": 1,
+  "deadline": "2024-10-20T10:00:00Z",
+  "status": "pending"
+}
+```
+- **404 *Not Found***
+```json
+{
+  "error": "Task is not found."
+}
+```
+- **500 *Internal Server Error***
+```json
+{
+  "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Редагування конкретного завдання за ID**
+
+</summary>
+
+- **URL:** `/api/tasks/{task_id}`
+- **Методи:** ==PUT==
+- **Опис:** Оновлює існуюче завдання за його ID.
+
+**Тіло запиту**
+```json
+{
+  "title": "New title",
+  "description": "New description",
+  "user_id": 5,
+  "room_id": 2,
+  "deadline": "2024-11-01T12:00:00Z",
+  "status": "completed"
+}
+```
+
+**Відповіді**
+- **200 *OK***
+```json
+{
+  "message": "Task updated successfully."
+}
+```
+- **404 *Not Found***
+```json
+{
+  "error": "Task is not found."
+}
+```
+- **422 *Unprocessable Entity***
+```json
+{
+  "error": "Invalid status value. (1, 2, 3) are possible."
+}
+```
+- **500 *Internal Server Error***
+```json
+{
+  "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+### Видалення конкретного завдання за ID
+
+</summary>
+
+- **URL:** `/api/tasks/{task_id}`
+- **Методи:** `DELETE`
+- **Опис:** Видаляє існуюче завдання за його ID.
+
+**Відповіді**
+- **204 *No Content***    
+- **404 *Not Found***
+```json
+{
+  "error": "Task is not found."
+}
+```
+- **500 *Internal Server Error***
+```json
+{
+  "error": "details"
+}
+```
+</details>
