@@ -10,7 +10,9 @@
 ### Користувачі
 <details>
 <summary>
+
 **Реєстрація користувача**
+
 </summary>
 
 - **URL:** `api/users`
@@ -54,7 +56,9 @@
 
 <details>
 <summary>
+
 **Отримання всіх користувачів**
+
 </summary>
 
 - **URL:** `api/users`
@@ -89,7 +93,9 @@
 
 <details>
 <summary>
+
 **Отримання користувача**
+
 </summary>
 
 - **URL:** `api/users/{user_id}`
@@ -126,7 +132,9 @@
 
 <details>
 <summary>
+
 **Редагування користувачів** 
+
 </summary>
 
 - **URL:** `api/users/{user_id}`
@@ -164,7 +172,9 @@
 
 <details>
 <summary>
+
 **Видалення користувача** 
+
 </summary>
 
 - **URL:** `api/users/{user_id}`
@@ -189,7 +199,9 @@
 
 <details>
 <summary>
+
 **Отримання кімнат користувача**
+
 </summary>
 
 - **URL:** `api/users/{user_id}/rooms`
@@ -232,7 +244,9 @@
 
 <details>
 <summary>
+
 **Отримання завдань користувача**
+
 </summary>
 
 - **URL:** `api/users/{user_id}/rooms`
