@@ -77,7 +77,9 @@ def get_relation_by_user(user_id:int):
     try:
         relations = UserRoom.query.filter_by(user_id=user_id).all()
         rooms = [{"room_id": relation.room_id} for relation in relations]
-        return make_response(jsonify(rooms), 200)
+        if rooms:
+            return make_response(jsonify(rooms), 200)
+        return make_response(jsonify({"error": "User is not found or has no rooms"}))
     except Exception as e:
         return make_response(jsonify({"error": str(e)}), 500)
     
