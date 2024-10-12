@@ -1,76 +1,104 @@
-version: '3.8'
-
 services:
-  db_users:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: users_db
-    volumes:
-      - postgres_data_users:/var/lib/postgresql/data
-    ports:
-      - "5431:5432"
-
-  db_rooms:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: rooms_db
-    volumes:
-      - postgres_data_rooms:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-
-  db_tasks:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: tasks_db
-    volumes:
-      - postgres_data_tasks:/var/lib/postgresql/data
-    ports:
-      - "5434:5432"
-
   users_service:
+    container_name: users_service
+    image: users-service:1.0.0
     build: ./users_service
-    environment:
-      DATABASE_URL: postgresql://username:password@db_users:5432/users_db
-    depends_on:
-      - db_users
     ports:
-      - "5001:5000"
+      - "1000:1000"
+    environment:
+      - DB_USERS=postgresql://postgres:postgres@users_db:5432/users_db
+    depends_on:
+      - users_db
+  
+  users_db:
+    container_name: users_db
+    image: postgres:13
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=users_db
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+  tasks_service:
+    container_name: tasks_service
+    image: tasks-service:1.0.0
+    build: ./tasks_service
+    ports:
+      - "2000:2000"
+    environment:
+      - DB_TASKS=postgresql://postgres:postgres@tasks_db:5432/tasks_db
+    depends_on:
+      - tasks_db
+    
+  tasks_db:
+    container_name: tasks_db
+    image: postgres:13
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=tasks_db
+    volumes:
+      - tasks_data:/var/lib/postgresql/data
 
   rooms_service:
+    container_name: rooms_service
+    image: rooms-service:1.0.0
     build: ./rooms_service
-    environment:
-      DATABASE_URL: postgresql://username:password@db_rooms:5432/rooms_db
-    depends_on:
-      - db_rooms
     ports:
-      - "5002:5000"
-    
-  tasks_service:
-    build: ./tasks_service
+      - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://username:password@db_tasks:5432/tasks_db
+      - DB_ROOMS=postgresql://postgres:postgres@rooms_db:5432/rooms_db
     depends_on:
-      - db_tasks
+      - rooms_db
+
+  rooms_db:
+    container_name: rooms_db
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=rooms_db
+    volumes:
+      - rooms_data:/var/lib/postgresql/data
+
+  keys_service:
+    container_name: keys_service
+    image: keys-service:1.0.0
+    build: ./foreign_keys_service
     ports:
-      - "5003:5000"
+      - "4000:4000"
+    environment:
+      - DB_KEYS=postgresql://postgres:postgres@keys_db:5432/keys_db
+    depends_on:
+      - keys_db
+      - rooms_service
+      - users_service
+
+  keys_db:
+    container_name: keys_db
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=keys_db  
+    volumes:
+      - keys_data:/var/lib/postgresql/data
 
   api_gateway:
+    container_name: api_gateway
+    image: api-gateway:1.0.0
     build: ./api_gateway
     ports:
       - "5000:5000"
     depends_on:
       - users_service
-      - rooms_service
       - tasks_service
+      - rooms_service
+      - keys_service
 
 volumes:
-  postgres_data_users:
-  postgres_data_rooms:
-  postgres_data_tasks:
+  users_data: {}
+  tasks_data: {}
+  rooms_data: {}
+  keys_data: {}

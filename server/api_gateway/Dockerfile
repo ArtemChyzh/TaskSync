@@ -1,7 +1,7 @@
-FROM python:3.9-slim
+FROM python:3.9-slim-buster
 WORKDIR /app
-COPY requirments.txt requirments.txt
-RUN pip install --no-cache-dir -r requirments.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
 COPY . .
-ENV FLASK_ENV=development
-CMD ["flask", "run", "--host=0.0.0.0"]
+EXPOSE 5000
+CMD [ "flask", "run", "--host=0.0.0.0", "--port=5000" ]

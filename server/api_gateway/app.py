@@ -1,95 +1,128 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 import requests
 
 app = Flask(__name__)
 
-USERS_SERVICE_URL = "http://users_service:5000/"
-ROOMS_SERVICE_URL = "http://rooms_service:5000/"
-TASKS_SERVICE_URL = "http://tasks_service:5000/"
+USERS_SERVICE = "http://users_service:1000"
+ROOMS_SERVICE = "http://rooms_service:2000"
+TASKS_SERVICE = "http://tasks_service:3000"
+KEYS_SERVICE = "http://keys_service:4000"
 
+#--Users--
 
-@app.route('/')
-def home():
-    return jsonify({
-        "message": "Welcome to the TaskSync API Gateway!"
-    }), 200
-
-
-@app.route('/users', methods=['GET', 'POST'])
+#Get users or add an user
+@app.route("/api/users", methods=["POST", "GET"])
 def users():
-    if request.method == 'GET':
-        response = requests.get(f"{USERS_SERVICE_URL}/users")
-    elif request.method == 'POST':
-        data = request.json
-        response = requests.post(f"{USERS_SERVICE_URL}/users", json=data)
-    return jsonify(response.json()), response.status_code
+    if request.method == "POST":
+        data = request.get_json()
+        response = requests.post(f"{USERS_SERVICE}/users", json=data)
+    else:
+        response = requests.get(f"{USERS_SERVICE}/users")
+    return make_response(jsonify(response.json()), response.status_code)
 
+#Get user by username
+@app.route("/api/user/<string:username>", methods=["GET"])
+def username(username):
+    response = requests.get(f"{USERS_SERVICE}/user/{username}")
+    return make_response(jsonify(response.json()), response.status_code)
 
-@app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-def user_detail(id):
-    if request.method == 'GET':
-        response = requests.get(f"{USERS_SERVICE_URL}/users/{id}")
-    elif request.method == 'PUT':
-        data = request.json
-        response = requests.put(f"{USERS_SERVICE_URL}/users/{id}", json=data)
-    elif request.method == 'DELETE':
-        response = requests.delete(f"{USERS_SERVICE_URL}/users/{id}")
-    return jsonify(response.json()), response.status_code
+#Get, edit or delete a user by id
+@app.route("/api/users/<int:user_id>", methods=["GET", "PUT", "DELETE"])
+def user(user_id):
+    if request.method == "GET":
+        response = requests.get(f"{USERS_SERVICE}/users/{user_id}")
+    elif request.method == "PUT":
+        data = request.get_json()
+        response = requests.put(f"{USERS_SERVICE}/users/{user_id}", json=data)
+    else:
+        response = requests.delete(f"{USERS_SERVICE}/users/{user_id}")
+    return make_response(jsonify(response.json()), response.status_code)
 
+#All room with the mentioned user
+@app.route("/api/users/<int:user_id>/rooms", methods=["GET"])
+def get_user_rooms(user_id):
+    response = requests.get(f"{KEYS_SERVICE}/users_rooms/user/{user_id}")
+    return make_response(jsonify(response.json()), response.status_code)
 
-@app.route('/rooms', methods=['GET', 'POST'])
+#All tasks of the mentioned user
+@app.route("/api/users/<int:user_id>/tasks", methods=["GET"])
+def get_user_tasks(user_id):
+    response = requests.get(f"{TASKS_SERVICE}/tasks/user/{user_id}")
+    return make_response(jsonify(response.json()), response.status_code)
+
+#--Rooms--
+
+#Get rooms or add a room
+@app.route("/api/rooms", methods=["GET", "POST"])
 def rooms():
-    if request.method == 'GET':
-        response = requests.get(f"{ROOMS_SERVICE_URL}/rooms")
-    elif request.method == 'POST':
-        data = request.json
-        response = requests.post(f"{ROOMS_SERVICE_URL}/rooms", json=data)
-    return jsonify(response.json()), response.status_code
+    if request.method == "GET":
+        response = requests.get(f"{ROOMS_SERVICE}/rooms")
+    else:
+        data = request.get_json()
+        response = requests.post(f"{ROOMS_SERVICE}/rooms", json=data)
+    return make_response(jsonify(response.json()), response.status_code)
 
+#Get room by code
+@app.route("/api/rooms/<string:code>", methods=["GET"])
+def code(code):
+    response = requests.get(f"{ROOMS_SERVICE}/rooms/code/{code}")
+    return make_response(jsonify(response.json()), response.status_code)
 
-@app.route('/rooms/<int:id>', methods=['GET', 'DELETE'])
-def room_detail(id):
-    if request.method == 'GET':
-        response = requests.get(f"{ROOMS_SERVICE_URL}/rooms/{id}")
-    elif request.method == 'DELETE':
-        response = requests.delete(f"{ROOMS_SERVICE_URL}/rooms/{id}")
-    return jsonify(response.json()), response.status_code
+#Get or delete specify room
+@app.route("/api/rooms/<int:room_id>", methods=["GET", "DELETE"])
+def room(room_id):
+    if request.method == "GET":
+        response = requests.get(f"{ROOMS_SERVICE}/rooms/{room_id}")
+    else:
+        response = requests.delete(f"{ROOMS_SERVICE}/rooms/{room_id}")
+    return make_response(jsonify(response.json()), response.status_code)
 
+#All users in the room
+@app.route("/api/rooms/<int:room_id>/users", methods=["GET"])
+def get_room_users(room_id):
+    response = requests.get(f"{KEYS_SERVICE}/users_rooms/room/{room_id}")
+    return make_response(jsonify(response.json()), response.status_code)
 
-@app.route('/rooms/<int:room_id>/users', methods=['POST'])
-def add_user_to_room(room_id):
-    data = request.json
-    response = requests.post(f"{ROOMS_SERVICE_URL}/rooms/{room_id}/users", json=data)
-    return jsonify(response.json()), response.status_code
+#All tasks in the room
+@app.route("/api/rooms/<int:room_id>/tasks", methods=["GET"])
+def get_room_tasks(room_id):
+    response = requests.get(f"{TASKS_SERVICE}/tasks/room/{room_id}")
+    return make_response(jsonify(response.json()), response.status_code)
 
+#Join user to the room
+@app.route("/api/rooms/join", methods=["POST"])
+def join():
+    data=request.get_json()
+    response = requests.post(f"{KEYS_SERVICE}/users_rooms", json=data)
+    return make_response(jsonify(response.json()), response.status_code)
 
-@app.route('/rooms/<int:room_id>/users/<int:user_id>', methods=['DELETE'])
-def remove_user_from_room(room_id, user_id):
-    response = requests.delete(f"{ROOMS_SERVICE_URL}/rooms/{room_id}/users/{user_id}")
-    return jsonify(response.json()), response.status_code
+#Remove user from the room
+@app.route("/api/rooms/remove", methods=["DELETE"])
+def remove():
+    data = request.get_json()
+    response = requests.delete(f"{KEYS_SERVICE}/users_rooms", json=data)
+    return make_response(jsonify(response.json()), response.status_code)
 
+#--Tasks--
 
-@app.route('/tasks', methods=['GET', 'POST'])
+#Get all tasks or create new
+@app.route("/api/tasks", methods=["GET", "POST"])
 def tasks():
-    if request.method == 'GET':
-        response = requests.get(f"{TASKS_SERVICE_URL}/tasks")
-    elif request.method == 'POST':
-        data = request.json
-        response = requests.post(f"{TASKS_SERVICE_URL}/tasks", json=data)
-    return jsonify(response.json()), response.status_code
+    if request.method == "POST":
+        data = request.get_json()
+        response = requests.post(f"{TASKS_SERVICE}/tasks", json=data)
+    else:
+        response = requests.get(f"{TASKS_SERVICE}/tasks")
+    return make_response(jsonify(response.json()), response.status_code)
 
-
-@app.route('/tasks/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-def task_detail(id):
-    if request.method == 'GET':
-        response = requests.get(f"{TASKS_SERVICE_URL}/tasks/{id}")
-    elif request.method == 'PUT':
-        data = request.json
-        response = requests.put(f"{TASKS_SERVICE_URL}/tasks/{id}", json=data)
-    elif request.method == 'DELETE':
-        response = requests.delete(f"{TASKS_SERVICE_URL}/tasks/{id}")
-    return jsonify(response.json()), response.status_code
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+#Get, edit or delete mentioned task
+@app.route("/api/tasks/<int:task_id>", methods=["GET", "POST", "DELETE"])
+def task(task_id):
+    if request.method == "GET":
+        response = requests.get(f"{TASKS_SERVICE}/tasks/{task_id}")
+    elif request.method == "PUT":
+        data = request.get_json()
+        response = requests.put(f"{TASKS_SERVICE}/tasks/{task_id}", json=data)
+    else:
+        response = requests.delete(f"{TASKS_SERVICE}/tasks/{task_id}")
+    return make_response(jsonify(response.json()), response.status_code)

@@ -1,5 +1,5 @@
-Flask
-SQLAlchemy
+flask
+requests
 psycopg2-binary
 Flask-SQLAlchemy
 Werkzeug

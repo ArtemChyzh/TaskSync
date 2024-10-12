@@ -1,108 +1,115 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import joinedload
-import os
+from os import environ
+import requests
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'postgresql://username:password@db_rooms/rooms_db'
+app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("DB_ROOMS")
 db = SQLAlchemy(app)
 
+KEYS_SERVICE = "http://keys_service:4000"
+
 class Room(db.Model):
+    __tablename__ = "rooms"
     id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(9), nullable=False, unique=True)
-    users = db.relationship('UserRoom', backref='room', lazy=True, cascade="all, delete-orphan")
+    user_id = db.Column(db.Integer, nullable=False)
+    code = db.Column(db.String(6), nullable=False, unique=True, index=True)
+    title = db.Column(db.String(128), nullable=True)
+    description = db.Column(db.String(4096), nullable=True)
 
-class UserRoom(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True, index=True)
-    room_id = db.Column(db.Integer, db.ForeignKey(Room.id, ondelete="CASCADE"), primary_key=True, index=True)
+    def json(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "code": self.code,
+            "title": self.title,
+            "description": self.description
+        }
 
-@app.route('/rooms/<int:room_id>/users', methods=["POST"])
-def add_user_to_room(room_id):
-    data = request.get_json()
-    if "user_id" not in data:
-        return jsonify({"error": "Invalid data. 'user_id' is required"}), 400
-    room = Room.query.get(room_id)
-    if not room:
-        return jsonify({"error": "Room not found"}), 404
-    user_room = UserRoom.query.filter_by(user_id=data["user_id"], room_id=room_id).first()
-    if user_room:
-        return jsonify({"error": "User is already in the room"}), 403
-    try:
-        new_user_room = UserRoom(user_id=data["user_id"], room_id=room_id)
-        db.session.add(new_user_room)
-        db.session.commit()
-        return jsonify({"message": "User added to the room successfully"}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e), "service": "rooms"}), 500
+with app.app_context():
+    db.create_all()
 
-@app.route('/rooms/<int:room_id>/users/<int:user_id>', methods=["DELETE"])
-def remove_user_from_room(room_id, user_id):
-    user_room = UserRoom.query.filter_by(user_id=user_id, room_id=room_id).first()
-    if not user_room:
-        return jsonify({"error": "User not found in the room"}), 404
-    try:
-        db.session.delete(user_room)
-        db.session.commit()
-        remaining_users = UserRoom.query.filter_by(room_id=room_id).count()
-        if remaining_users == 0:
-            room = Room.query.get(room_id)
-            db.session.delete(room)
-            db.session.commit()
-        return jsonify({"message": "User removed from the room successfully"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e), "service": "rooms"}), 500
-
-@app.route('/rooms', methods=["GET"])
-def get_rooms():
-    rooms = Room.query.options(joinedload(Room.users)).all()
-    result = []
-    for room in rooms:
-        user_ids = [user_room.user_id for user_room in room.users]
-        result.append({
-            'room_id': room.id,
-            'code': room.code,
-            'user_ids': user_ids
-        })
-    try:
-        return jsonify(result), 200
-    except Exception as e:
-        return jsonify({"error": str(e), "service": "rooms"}), 500
-
-@app.route('/rooms/<int:id>', methods=["GET"])
-def get_room(id: int):
-    room = Room.query.options(joinedload(Room.users)).get(id)
-    if not room:
-        return jsonify({"error": "Room not found"}), 404
-    user_ids = [user_room.user_id for user_room in room.users]
-    try:
-        return jsonify({
-            "room_id": room.id,
-            "code": room.code,
-            "user_ids": user_ids
-        }), 200
-    except Exception as e:
-        return jsonify({"error": str(e), "service": "rooms"}), 500
+@app.route("/", methods=["GET"])
+def test():
+    return make_response(jsonify({
+        "message": "Test route"
+        }), 200)
 
 @app.route("/rooms", methods=["POST"])
 def create_room():
-    data = request.get_json()
-    if "user_id" not in data or "code" not in data:
-        return jsonify({"error": "Invalid data. 'user_id' and 'code' are required"}), 400
-    if Room.query.filter_by(code=data["code"]).first():
-        return jsonify({"error": "Room with this code already exists"}), 403
     try:
-        room = Room(code=data["code"])
-        db.session.add(room)
-        db.session.flush()
-        user_room = UserRoom(user_id=data["user_id"], room_id=room.id)
-        db.session.add(user_room)
+        data = request.get_json()
+        if "user_id" not in data or "code" not in data:
+            return make_response(jsonify({"error": "Invalid data. 'user_id' and 'code' are required"}), 422)
+        room = Room.query.filter_by(code=data["code"]).first()
+        if room:
+            return make_response(jsonify({"error": "Room already exists. 'code' must be unique"}), 409)
+        new_room = Room(
+            user_id=data["user_id"],
+            code=data["code"],
+            title=data.get("title", data["code"]),
+            description=data.get("description", "")
+        )
+        db.session.add(new_room)
         db.session.commit()
-        return jsonify({"message": "Room created successfully"}), 201
+        return make_response(jsonify({"message": "Room created successfully.", "room_id": new_room.id}), 201)
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e), "service": "rooms"}), 500
-
-if __name__ == "__main__":
-    app.run(debug=True)
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms", methods=["GET"])
+def get_rooms():
+    try:
+        rooms = Room.query.all()
+        return make_response(jsonify([room.json() for room in rooms]), 200)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}))
+    
+@app.route("/rooms/<int:id>", methods=["GET"])
+def get_room_by_id(id:int):
+    try:
+        room = Room.query.get(id)
+        if room:
+            return make_response(jsonify(room.json()), 200)
+        return make_response(jsonify({"error": "Room is not found."}), 404)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms/code/<string:code>", methods=["GET"])
+def get_room_by_code(code:str):
+    try:
+        room = Room.query.filter_by(code=code).first()
+        if room:
+            return make_response(jsonify(room.json()), 200)
+        return make_response(jsonify({"error": "Room is not found"}), 404)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms/<int:id>", methods=["PUT"])
+def update_room(id:int):
+    try:
+        room = Room.query.get(id)
+        if not room:
+            return make_response(jsonify({"error": "Room not found."}), 404)
+        data = request.get_json()
+        if "title" in data: room.title=data["title"]
+        if "description" in data: room.description=data["description"]
+        db.session.commit()
+        return make_response(jsonify({"message": "Room updated successfully."}), 200)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms/<int:id>", methods=["DELETE"])
+def delete_room(id:int):
+    try:
+        room = Room.query.get(id)
+        if not room:
+            return make_response(jsonify({"error": "Room is not found."}), 404)
+        db.session.delete(room)
+        db.session.commit()
+        response = requests.delete(f"{KEYS_SERVICE}/users_rooms/room/{id}")
+        if response.status_code < 300 and response.status_code >= 200:
+            return make_response(jsonify({"message": "Room deleted successfully."}), 204)
+        else:
+            return make_response(jsonify(response.json()), response.status_code)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
