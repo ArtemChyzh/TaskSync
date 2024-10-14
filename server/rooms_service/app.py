@@ -62,7 +62,7 @@ def get_rooms():
         rooms = Room.query.all()
         return make_response(jsonify([room.json() for room in rooms]), 200)
     except Exception as e:
-        return make_response(jsonify({"error": str(e)}))
+        return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/rooms/<int:id>", methods=["GET"])
 def get_room_by_id(id:int):
@@ -89,13 +89,14 @@ def update_room(id:int):
     try:
         room = Room.query.get(id)
         if not room:
-            return make_response(jsonify({"error": "Room not found."}), 404)
+            return make_response(jsonify({"error": "Room is not found."}), 404)
         data = request.get_json()
         if "title" in data: room.title=data["title"]
         if "description" in data: room.description=data["description"]
         db.session.commit()
         return make_response(jsonify({"message": "Room updated successfully."}), 200)
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/rooms/<int:id>", methods=["DELETE"])

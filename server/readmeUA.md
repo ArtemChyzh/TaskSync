@@ -182,7 +182,7 @@
 - **Опис**: Видалення користувача за id
 
 **Відповіді**
-**201 *No Content***
+**204 *No Content***
 **404 *Not found***
 ```json
 {
@@ -289,7 +289,7 @@
 ```
 </details>
 
-### Завдвння
+### Завдання
 <details>
 <summary>
 
@@ -306,7 +306,7 @@
     "title": "Default",
     "user_id": 1,
     "room_id": 1,
-    "deadline": "01-04-2024",
+    "deadline": "2024-04-01T00:00:00Z",
     "status": 3 
 }
 ```
@@ -494,12 +494,12 @@
 <details>
 <summary>
 
-### Видалення конкретного завдання за ID
+**Видалення конкретного завдання за ID**
 
 </summary>
 
 - **URL:** `/api/tasks/{task_id}`
-- **Методи:** `DELETE`
+- **Методи:** ==DELETE==
 - **Опис:** Видаляє існуюче завдання за його ID.
 
 **Відповіді**
@@ -514,6 +514,398 @@
 ```json
 {
   "error": "details"
+}
+```
+</details>
+
+### Кімнати
+<details>
+<summary>
+
+**Створення кімнати**
+
+</summary>
+
+- **URL:** `/api/rooms`
+- **Метод:** ==POST==
+- **Опис:** Створення нової кімнати, в яку автоматично додається користувач, що її створив (завдання не можуть існувати, не належачи до жодної кімнати)
+**Параметри запиту**
+```json
+{
+    "user_id": 1,
+    "code": "0000",
+    "title": "Default Room",
+    "description": "AAAAAAAAAAAAAAAAAAAA я дуже втомився"
+}
+```
+
+**Відповіді**
+**201 *Created***
+```json
+{
+    "message": "Room created successfully",
+    "room_id": "1"
+}
+```
+**422 *Unprocessable Entity***
+```json
+{
+    "error": "Invalid data. 'user_id' and 'code' are required"
+}
+```
+**409 *Conflict***
+```json
+{
+    "error": "Room already exists. 'code' must be unique"
+}
+```
+**500 *Internal Service Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Отримання кімнат**
+
+</summary>
+
+- **URL:** `/api/rooms`
+- **Метод:** ==GET==
+- **Опис:** Список всіх кімнат, що існують
+
+**Відповіді**
+**200 *ОК***
+```json
+[
+  {
+    "id": 1,
+    "user_id": 2,
+    "code": "ABC123",
+    "title": "Project Planning",
+    "description": "Room for project planning and task coordination."
+  },
+  {
+    "id": 2,
+    "user_id": 3,
+    "code": "XYZ456",
+    "title": "Design Team",
+    "description": "Room for the design team to share ideas and collaborate."
+  },
+  {
+    "id": 3,
+    "user_id": 4,
+    "code": "LMN789",
+    "title": "Development Room",
+    "description": "Room for developers to discuss progress and technical challenges."
+  }
+]
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Отримання конкретної кімнати (шифр)**
+
+</summary>
+
+- **URL:** `/api/rooms/{code}`
+- **Метод:** ==GET==
+- **Опис:** Отримання кімнати за її індивідуальним шифром
+
+**Відповіді**
+**200 *OK***
+```json
+{
+    "id": 2,
+    "user_id": 3,
+    "code": "XYZ456",
+    "title": "Design Team",
+    "description": "Room for the design team to share ideas and collaborate."
+}
+```
+**404 *Not found***
+```json
+{
+    "error": "Room is not found."
+}
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Отримання конкретної кімнати (номер)**
+
+</summary>
+
+- **URL:** `/api/rooms/{room_id}`
+- **Метод:** ==GET==
+- **Опис:** Отримання кімнати за її id
+
+**Відповіді**
+**200 *ОК***
+```json
+{
+    "id": 1,
+    "user_id": 2,
+    "code": "ABC123",
+    "title": "Project Planning",
+    "description": "Room for project planning and task coordination."
+}
+```
+**404 *Not found***
+```json
+{
+    "error": "Room is not found."
+}
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Видалення кімнати**
+
+</summary>
+
+- **URL:** `/api/rooms/{room_id}`
+- **Метод:** ==DELETE==
+- **Опис:** Видалення кімнати за її id
+
+**Відповіді**
+**204 *No Content***
+**404 *Not found***
+```json
+{
+    "error": "Room is not found."
+}
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Отримання користувачів в кімнаті**
+
+</summary>
+
+- **URL:** `/api/rooms/{room_id}/users`
+- **Метод:** ==GET==
+- **Опис:** Список всіх користувачів, що прикріплені до конкретної кімнати.
+
+**Відповіді**
+**200 *ОК***
+```json
+[
+    {
+        "user_id": 1,
+        "username": "user001",
+        "password": "StrongPassword321!",
+        "email": "user001@fakemail.com"
+    },
+    {
+        "user_id": 2,
+        "username": "user002",
+        "password": "StrongPassword321!",
+        "email": "user002@fakemail.com"
+    }
+]
+```
+**404 *Not found***
+```json
+{
+    "fatal": "Room does not exist or there are no users in room."
+}
+```
+**Примітка:** *Якщо ви отримали цю помилку перевірте наявність кімнати за її номером. Якщо кімната існує, але ви все ж отримали помилку - це може означати, що кімната не була видалена після видалення всіх користувачів, що може призвести до значних витоків пам'яті.*
+
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Отримання завдань кімнати**
+
+</summary>
+
+- **URL:** `/api/rooms/{room_id}/tasks`
+- **Метод:** ==GET==
+- **Опис:** Список всіх завдань всередині кімнати.
+
+**Відповіді**
+**200 *ОК***
+```json
+[
+  {
+    "id": 1,
+    "title": "Fix the bug in the authentication system",
+    "description": "There's a critical bug in the login feature that prevents users from logging in under certain conditions.",
+    "user_id": 2,
+    "room_id": 1,
+    "deadline": "2024-10-20T10:00:00Z",
+    "status": "pending"
+  },
+  {
+    "id": 2,
+    "title": "Create project documentation",
+    "description": "Document the API endpoints, data models, and overall project architecture for future reference.",
+    "user_id": 4,
+    "room_id": 1,
+    "deadline": "2024-10-22T16:30:00Z",
+    "status": "in_progress"
+  }
+]
+```
+**404 *Not found***
+```json
+{
+    "error": "Room is not found or contains no tasks"
+}
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Доєднання користувача до кімнати**
+
+</summary>
+
+- **URL:** `/api/rooms/join`
+- **Метод:** ==POST==
+- **Опис:** Прикріплює певного користувача до певної кімнати.
+**Параметри запиту**
+```json
+{
+    "user_id": 1,
+    "room_id": 1
+}
+```
+
+**Відповіді**
+**201 *ОК***
+```json
+{
+    "message": "User joined the room."
+}
+```
+**404 *Not found***
+```json
+{
+    "error": "User is not found"
+}
+```
+or
+```json
+{
+    "error": "Room is not found" 
+}
+```
+**409 *Conflict***
+```json
+{
+    "error": "User is already joined."
+}
+```
+**422 *Unprocessable value***
+```json
+{
+    "error": "Invalid data. 'user_id' and 'room_id' are required"
+}
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
+}
+```
+</details>
+
+<details>
+<summary>
+
+**Від'єднання користувача від кімнати**
+
+</summary>
+
+- **URL:** `/api/rooms/remove`
+- **Методи:** ==DELETE==
+- **Опис:** Від'єднує конкретного користувача від конкретної кімнати
+**Параметри запиту**
+```json
+{
+    "user_id": 1,
+    "room_id": 1
+}
+```
+
+**Відповіді**
+**200 *OK***
+```json
+{
+    "message": "User removed from room successfully."
+}
+```
+**204 *No Content***
+**Примітка:** *Користувача від'єднано, а кімнату видалено, оскільки в ній не лишилось користувачів*
+**404 *Not found**
+```json
+{
+    "error": "Relation is not found."
+}
+```
+**422 *Unprocessable Entity***
+```json
+{
+    "error": "Invalid data. 'user_id' and 'room_id' are required"
+}
+```
+**500 *Internal Server Error***
+```json
+{
+    "error": "details"
 }
 ```
 </details>
