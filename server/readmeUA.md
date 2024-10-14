@@ -331,7 +331,7 @@
     "error": "details"
 }
 ```
-</detais>
+</details>
 
 <details>
 <summary>
@@ -908,5 +908,4 @@ or
     "error": "details"
 }
 ```
-</details>
 </details>
