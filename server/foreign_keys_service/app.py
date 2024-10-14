@@ -36,7 +36,7 @@ def join_user():
     try:
         data=request.get_json()
         if "user_id" not in data or "room_id" not in data:
-            return make_response(jsonify({"Invalid data. 'user_id' and 'room_id' are required"}), 422)
+            return make_response(jsonify({"error": "Invalid data. 'user_id' and 'room_id' are required"}), 422)
         relation = UserRoom.query.filter(and_(UserRoom.room_id==data["room_id"], UserRoom.user_id==data["user_id"])).first()
         if relation:
             return make_response(jsonify({"User is already joined."}), 409)
@@ -66,7 +66,7 @@ def get_relation_by_room(room_id:int):
     try:
         relations = UserRoom.query.filter_by(room_id=room_id).all()
         if not relations:
-            return make_response(jsonify({"error": "No users in room."}), 404)
+            return make_response(jsonify({"fatal": "Room does not exist or there are no users in room."}), 404)
         users = [{"user_id": relation.user_id for relation in relations}]
         return make_response(jsonify(users), 200)
     except Exception as e:
