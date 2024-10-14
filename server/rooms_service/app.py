@@ -54,6 +54,7 @@ def create_room():
         db.session.commit()
         return make_response(jsonify({"message": "Room created successfully.", "room_id": new_room.id}), 201)
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/rooms", methods=["GET"])
@@ -105,12 +106,20 @@ def delete_room(id:int):
         room = Room.query.get(id)
         if not room:
             return make_response(jsonify({"error": "Room is not found."}), 404)
+        
         db.session.delete(room)
         db.session.commit()
-        response = requests.delete(f"{KEYS_SERVICE}/users_rooms/room/{id}")
-        if response.status_code < 300 and response.status_code >= 200:
-            return make_response(jsonify({"message": "Room deleted successfully."}), 204)
-        else:
-            return make_response(jsonify(response.json()), response.status_code)
+        
+        try:
+            response = requests.delete(f"{KEYS_SERVICE}/users_rooms/room/{id}")
+            if response.status_code < 300 and response.status_code >= 200:
+                return make_response(jsonify({"message": "Room deleted successfully."}), 204)
+            else:
+                error_message = response.json() if response.headers.get('content-type') == 'application/json' else response.text
+                return make_response(jsonify({"error": f"Room deleted, but failed to delete keys: {error_message}"}), response.status_code)
+        except requests.RequestException as e:
+            return make_response(jsonify({"error": f"Room deleted, but failed to communicate with keys service: {str(e)}"}), 500)
+    
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)

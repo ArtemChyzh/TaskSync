@@ -37,26 +37,39 @@ def join_user():
         data=request.get_json()
         if "user_id" not in data or "room_id" not in data:
             return make_response(jsonify({"error": "Invalid data. 'user_id' and 'room_id' are required"}), 422)
+        
         relation = UserRoom.query.filter(and_(UserRoom.room_id==data["room_id"], UserRoom.user_id==data["user_id"])).first()
         if relation:
             return make_response(jsonify({"User is already joined."}), 409)
+        
         user_response = requests.get(f"{USERS_SERVICE}/users/{data.get('user_id')}")
         if user_response.status_code == 404:
-            UserRoom.query.filter_by(user_id=data["user_id"]).delete()
-            db.session.commit()
-            return make_response(jsonify({"error": "User not found."}), 404)
+            try:
+                UserRoom.query.filter_by(user_id=data["user_id"]).delete()
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                return make_response(jsonify({"error": str(e)}))
+            return make_response(jsonify({"error": "User is not found"}), 404)
+        
         room_response=requests.get(f"{ROOMS_SERVICE}/rooms/{data.get('room_id')}")
         if room_response.status_code == 404:
-            UserRoom.query.filter_by(room_id=data["room_id"]).delete()
-            db.session.commit()
-            return make_response(jsonify({"error": "Room not found."}), 404)
+            try:
+                UserRoom.query.filter_by(room_id=data["room_id"]).delete()
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                return make_response(jsonify({"message": str(e)}), 500)
+            return make_response(jsonify({"error": "Room is not found"}), 404)
+        
         new_relaition = UserRoom(
             user_id=data["user_id"],
             room_id=data["room_id"]
         )
-        db.session.add(new_relaition)
+        db.session.add()
         db.session.commit()
         return make_response(jsonify({"message": "User joined successfully"}), 201)
+
     except Exception as e:
         db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
@@ -89,11 +102,17 @@ def delete_relation():
         data = request.get_json()
         if "user_id" not in data or "room_id" not in data:
             return make_response(jsonify({"error": "Invalid data. 'user_id' and 'room_id' are required"}), 422)
+        
         user_room = UserRoom.query.filter(and_(UserRoom.user_id==data["user_id"], UserRoom.room_id==data["room_id"])).first()
         if not user_room:
             return make_response(jsonify({"error": "Relation is not found."}), 404)
-        db.session.delete(user_room)
-        db.session.commit()
+        
+        try:
+            db.session.delete(user_room)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return make_response(jsonify({"message": str(e)}), 500)
 
         remaining_users = UserRoom.query.filter_by(room_id=data["room_id"]).all()
         if not remaining_users:
@@ -101,8 +120,14 @@ def delete_relation():
             if response.status_code < 300 and response.status_code >= 200:
                 return make_response(jsonify({"message": "User removed and room deleted as it had no users"}))
             else:
-                return make_response(jsonify(response.json()), response.status_code)
+                try:
+                    error_message = response.json()
+                except ValueError:
+                    error_message = response.text
+                return make_response(jsonify({"error": error_message}), response.status_code)
+        
         return make_response(jsonify({"message": "User removed from room successfully"}), 200)
+    
     except Exception as e:
         db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
@@ -112,10 +137,12 @@ def delete_all_relations_for_user(user_id):
     try:
         deleted_count = UserRoom.query.filter_by(user_id=user_id).delete()
         db.session.commit()
+
         if deleted_count > 0:
             return make_response(jsonify({"message": f"Deleted {deleted_count} relations for user {user_id}"}), 200)
         else:
             return make_response(jsonify({"message": "No relations found."}), 404)
+    
     except Exception as e:
         db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
@@ -130,6 +157,7 @@ def delete_all_relations_for_room(room_id):
             return make_response(jsonify({"message": f"Deleted {deleted_count} relations for room {room_id}"}), 200)
         else:
             return make_response(jsonify({"message": "No relations found for this room"}), 404)
+    
     except Exception as e:
         db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)

@@ -46,18 +46,13 @@ class Task(db.Model):
 with app.app_context():
     db.create_all()
 
-@app.route("/", methods=["GET"])
-def test():
-    return make_response(jsonify({
-        "message": "Test route"
-    }), 200)
-
 @app.route("/tasks", methods=["POST"])
 def create_task():
     try:
         data = request.get_json()
-        if "title" not in data or "user_id" not in data or "room_id" not in data:
+        if not all(k in data for k in ("title", "user_id", "room_id")):
             return make_response(jsonify({"error": "Invalid data. 'title', 'user_id' and 'room_id' are required"}), 422)
+        
         new_task = Task(
             title=data["title"],
             user_id=data["user_id"],
@@ -66,11 +61,18 @@ def create_task():
             deadline=data.get("deadline", (datetime.now(timezone.utc) + timedelta(days=7))),
             status=data.get("status", Status.pending.value)
         )
+
         db.session.add(new_task)
         db.session.commit()
+        
         return make_response(jsonify({"message": "Task created successfully", "task_id": new_task.id}), 201)
+    
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
+    
+    finally:
+        db.session.close()
 
 @app.route("/tasks", methods=["GET"])
 def get_tasks():
@@ -114,33 +116,46 @@ def get_tasks_in_room(room_id:int):
 def update_task(id:int):
     try:
         task = Task.query.get(id)
-        if task:
-            data = request.get_json()
-            if "title" in data: task.title=data["title"]
-            if "user_id" in data: task.user_id=data["user_id"]
-            if "room_id" in data: task.room_id=data["room_id"]
-            if "description" in data: task.description=data["description"]
-            if "deadline" in data: task.deadline=data["deadline"]
-            if "status" in data: 
-                status_value = data["status"]
-                if status_value in [status.value for status in Status]:
-                    task.status=Status(status_value)
-                else:
-                    return make_response(jsonify({"error": "Invalid status value. (1, 2, 3) are possible."}), 422)
-            db.session.commit()
-            return make_response(jsonify({"message": "Task updated successfully."}), 200)
-        return make_response(jsonify({"error": "Task is not found."}), 404)
+        if not task:
+            return make_response(jsonify({"error": "Task is not found."}), 404)
+        data = request.get_json()
+        if "title" in data: task.title=data["title"]
+        if "user_id" in data: task.user_id=data["user_id"]
+        if "room_id" in data: task.room_id=data["room_id"]
+        if "description" in data: task.description=data["description"]
+        if "deadline" in data: task.deadline=data["deadline"]
+        if "status" in data: 
+            status_value = data["status"]
+            if status_value in [status.value for status in Status]:
+                task.status=Status(status_value)
+            else:
+                return make_response(jsonify({"error": "Invalid status value. (1, 2, 3) are possible."}), 422)
+        
+        db.session.commit()
+
+        return make_response(jsonify({"message": "Task updated successfully."}), 200)
+    
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
     
+    finally:
+        db.session.close()
+
 @app.route("/tasks/<int:id>", methods=["DELETE"])
 def delete_task(id:int):
     try:
         task = Task.query.get(id)
-        if task:
-            db.session.delete(task)
-            db.session.commit()
-            return make_response(jsonify({"message": "Task deleted successfully."}), 204)
-        return make_response(jsonify({"error": "Task is not found."}), 404)
+        if not task:
+            return make_response(jsonify({"error": "Task is not found."}), 404)
+        
+        db.session.delete(task)
+        db.session.commit()
+        return make_response(jsonify({"message": "Task deleted successfully."}), 204)
+    
     except Exception as e:
+        db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
+    
+    finally:
+        db.session.close()
