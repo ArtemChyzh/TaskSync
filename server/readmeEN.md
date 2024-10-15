@@ -1,24 +1,24 @@
-# TaskSync API Документація
-## Огляд
-**TaskSync** - це система управління завданнями з підтримкою багатьох користувачів та спільних списків завдань (кімнат). Ця документація призначена для сторонніх розробників і містить інформацію про публічне api проекту.
+# TaskSync API Documentation
+## Overview
+**TaskSync** - is a multi-user task management system with support for shared task lists (rooms). This documentation is intended for third-party developers and contains information about the public api of the project.
 
-## Базовий URL
-Усі запити слід надсилати на API Gateway:
+## Base URL
+All requests should be sent to the API Gateway:
 [http://localhost:5000/api](http://localhost:5000/api)
 
-## Ендпоїнти
-### Користувачі
+## Endpoints
+### Users
 <details>
 <summary>
 
-#### Реєстрація користувача
+#### User registration
 
 </summary>
 
 - **URL:** `api/users`
-- **Метод**: <mark>POST</mark>
-- **Опис**: Створює нового користувача
-**Параметри запиту**
+- **Method**: <mark>POST</mark>
+- **Description**: Створює нового користувача
+**Request body**
 ```json
 {
     "username": "user001",
@@ -26,7 +26,7 @@
     "email": "user001@fakemail.com"
 }
 ```
-**Відповіді:**
+**Responses:**
 **201 *Created***
 ```json
 {
@@ -57,15 +57,15 @@
 <details>
 <summary>
 
-#### Отримання всіх користувачів
+#### Getting all users
 
 </summary>
 
 - **URL:** `api/users`
-- **Метод**: <mark>GET</mark>
-- **Опис**: Отримує список всіх користувачів
+- **Method**: <mark>GET</mark>
+- **Description**: Gets a list of all users
 
-**Відповіді:**
+**Responses:**
 **200 *OK***
 ```json
 [
@@ -94,19 +94,19 @@
 <details>
 <summary>
 
-#### Отримання користувача
+#### Getting the user
 
 </summary>
 
 - **URL:** `api/users/{user_id}`
-- **Метод**: <mark>GET</mark>
-- **Опис**: Отримання користувача за id
+- **Method**: <mark>GET</mark>
+- **Description**: Getting a user by id
 
 - **URL:** `api/user/{username}`
-- **Метод**: <mark>GET</mark>
-- **Опис**: Отримання користувача за username
+- **Method**: <mark>GET</mark>
+- **Description**: Getting a user by username
 
-**Відповіді:**
+**Responses:**
 **200 *OK***
 ```json
 {
@@ -133,14 +133,14 @@
 <details>
 <summary>
 
-#### Редагування користувачів
+#### Editing users
 
 </summary>
 
 - **URL:** `api/users/{user_id}`
-- **Метод**: <mark>PUT</mark>
-- **Опис**: Отримання користувача за id
-**Параметри запиту (мінімум один)**
+- **Method**: <mark>PUT</mark>
+- **Description**: Getting a user by id
+**Request body**
 ```json
 {
     "username": "user002",
@@ -149,7 +149,7 @@
 }
 ```
 
-**Відповіді**
+**Responses**
 **200 *OK***
 ```json
 {
@@ -173,15 +173,15 @@
 <details>
 <summary>
 
-#### Видалення користувача
+#### Deleting a user
 
 </summary>
 
 - **URL:** `api/users/{user_id}`
-- **Метод**: <mark>DELETE</mark>
-- **Опис**: Видалення користувача за id
+- **Method**: <mark>DELETE</mark>
+- **Description**: Deleting a user by id
 
-**Відповіді**
+**Responses**
 **204 *No Content***
 **404 *Not found***
 ```json
@@ -200,15 +200,15 @@
 <details>
 <summary>
 
-#### Отримання кімнат користувача
+#### Getting user rooms
 
 </summary>
 
 - **URL:** `api/users/{user_id}/rooms`
-- **Метод**: <mark>GET</mark>
-- **Опис**: Отримання всіх кімнат, в які входить користувач
+- **Method**: <mark>GET</mark>
+- **Description**: Get all the rooms the user enters
 
-**Відповіді**
+**Responses**
 **200 *OK***
 ```json
 [
@@ -245,21 +245,21 @@
 <details>
 <summary>
 
-#### Отримання завдань користувача
+#### Receiving user tasks
 
 </summary>
 
 - **URL:** `api/users/{user_id}/rooms`
-- **Метод**: <mark>GET</mark>
-- **Опис**: Отримання всіх завдань, які створив користувач
+- **Method**: <mark>GET</mark>
+- **Description**: Receive all tasks created by the user
 
-**Відповіді**
+**Responses**
 **200 *OK***
 ```json
 [
     {
         "task_id": 1,
-        "title": "Купити корову",
+        "title": "Buy a cow",
         "user_id": 1,
         "room_id": 6,
         "deadline": "01-04-2024",
@@ -267,7 +267,7 @@
     },
     {
         "task_id": 125,
-        "title": "Створити ферму",
+        "title": "Create a farm",
         "user_id": 1,
         "room_id": 8,
         "deadline": "01-04-2024",
@@ -289,18 +289,18 @@
 ```
 </details>
 
-### Завдання
+### Tasks
 <details>
 <summary>
 
-#### Створення завдання
+#### Create a task
 
 </summary>
 
 - **URL:** `/api/tasks`
-- **Метод:** <mark>POST</mark>
-- **Опис:** Публікація нового завдання
-**Параметри запиту**
+- **Method:** <mark>POST</mark>
+- **Description:** Publishing a new task
+**Request body**
 ```json
 {
     "title": "Default",
@@ -311,7 +311,7 @@
 }
 ```
 
-**Відповіді**
+**Responses**
 **201 *Created***
 ```json
 {
@@ -336,15 +336,15 @@
 <details>
 <summary>
 
-#### Отримання всіх завдань
+#### Receiving all tasks
 
 </summary>
 
 - **URL:** `/api/tasks`
-- **Методи:** <mark>GET</mark>
-- **Опис:** Отримує список всіх завдань
+- **Methodи:** <mark>GET</mark>
+- **Description:** Gets a list of all tasks
 
-**Відповіді**
+**Responses**
 **200 *OK***
 ```json
 [
@@ -406,15 +406,15 @@
 <details>
 <summary>
 
-#### Отримання конкретного завдання за ID
+#### Getting a specific task by ID
 
 </summary>
 
 - **URL:** `/api/tasks/{task_id}`
-- **Методи:** <mark>GET</mark>
-- **Опис:** Отримує конкретне завдання за його ID.
+- **Methodи:** <mark>GET</mark>
+- **Description:** 
 
-**Відповіді**
+**Responses**
 - **200 *OK***
 ```json
 {
@@ -444,13 +444,13 @@
 <details>
 <summary>
 
-#### Редагування конкретного завдання за ID
+#### Edit a specific task by ID
 
 </summary>
 
 - **URL:** `/api/tasks/{task_id}`
-- **Методи:** <mark>PUT</mark>
-- **Опис:** Оновлює існуюче завдання за його ID.
+- **Methodи:** <mark>PUT</mark>
+- **Description:** Updates an existing task by its ID.
 
 **Тіло запиту**
 ```json
@@ -464,7 +464,7 @@
 }
 ```
 
-**Відповіді**
+**Responses**
 - **200 *OK***
 ```json
 {
@@ -494,15 +494,15 @@
 <details>
 <summary>
 
-#### Видалення конкретного завдання за ID
+#### Delete a specific task by ID
 
 </summary>
 
 - **URL:** `/api/tasks/{task_id}`
-- **Методи:** <mark>DELETE</mark>
-- **Опис:** Видаляє існуюче завдання за його ID.
+- **Methodи:** <mark>DELETE</mark>
+- **Description:** Deletes an existing task by its ID.
 
-**Відповіді**
+**Responses**
 - **204 *No Content***    
 - **404 *Not Found***
 ```json
@@ -518,28 +518,28 @@
 ```
 </details>
 
-### Кімнати
+### Rooms
 <details>
 <summary>
 
-#### Створення кімнати
+#### Creating a room
 
 </summary>
 
 - **URL:** `/api/rooms`
-- **Метод:** <mark>POST</mark>
-- **Опис:** Створення нової кімнати, в яку автоматично додається користувач, що її створив (завдання не можуть існувати, не належачи до жодної кімнати)
-**Параметри запиту**
+- **Method:** <mark>POST</mark>
+- **Description:** Creating a new room, to which the user who created it is automatically added (tasks cannot exist without belonging to any room)
+**Request body**
 ```json
 {
     "user_id": 1,
     "code": "0000",
     "title": "Default Room",
-    "description": "AAAAAAAAAAAAAAAAAAAA я дуже втомився"
+    "description": "AAAAAAAAAAAAAAAAAAAA Im so tired"
 }
 ```
 
-**Відповіді**
+**Responses**
 **201 *Created***
 ```json
 {
@@ -570,15 +570,15 @@
 <details>
 <summary>
 
-#### Отримання кімнат
+#### Getting rooms
 
 </summary>
 
 - **URL:** `/api/rooms`
-- **Метод:** <mark>GET</mark>
-- **Опис:** Список всіх кімнат, що існують
+- **Method:** <mark>GET</mark>
+- **Description:** List of all existing rooms
 
-**Відповіді**
+**Responses**
 **200 *ОК***
 ```json
 [
@@ -616,15 +616,15 @@
 <details>
 <summary>
 
-#### Отримання конкретної кімнати (шифр)
+#### Getting a specific room (code)
 
 </summary>
 
 - **URL:** `/api/rooms/{code}`
-- **Метод:** <mark>GET</mark>
-- **Опис:** Отримання кімнати за її індивідуальним шифром
+- **Method:** <mark>GET</mark>
+- **Description:** Getting a room by its individual code
 
-**Відповіді**
+**Responses**
 **200 *OK***
 ```json
 {
@@ -652,15 +652,15 @@
 <details>
 <summary>
 
-#### Отримання конкретної кімнати (номер)
+#### Getting a specific room (number)
 
 </summary>
 
 - **URL:** `/api/rooms/{room_id}`
-- **Метод:** <mark>GET</mark>
-- **Опис:** Отримання кімнати за її id
+- **Method:** <mark>GET</mark>
+- **Description:** Getting a room by its id
 
-**Відповіді**
+**Responses**
 **200 *ОК***
 ```json
 {
@@ -688,15 +688,15 @@
 <details>
 <summary>
 
-#### Видалення кімнати
+#### Delete a room
 
 </summary>
 
 - **URL:** `/api/rooms/{room_id}`
-- **Метод:** <mark>DELETE</mark>
-- **Опис:** Видалення кімнати за її id
+- **Method:** <mark>DELETE</mark>
+- **Description:** Deleting a room by its id
 
-**Відповіді**
+**Responses**
 **204 *No Content***
 **404 *Not found***
 ```json
@@ -715,15 +715,15 @@
 <details>
 <summary>
 
-#### Отримання користувачів в кімнаті
+#### Getting users in the room
 
 </summary>
 
 - **URL:** `/api/rooms/{room_id}/users`
-- **Метод:** <mark>GET</mark>
-- **Опис:** Список всіх користувачів, що прикріплені до конкретної кімнати.
+- **Method:** <mark>GET</mark>
+- **Description:** A list of all users assigned to a specific room.
 
-**Відповіді**
+**Responses**
 **200 *ОК***
 ```json
 [
@@ -747,7 +747,7 @@
     "fatal": "Room does not exist or there are no users in room."
 }
 ```
-**Примітка:** *Якщо ви отримали цю помилку перевірте наявність кімнати за її номером. Якщо кімната існує, але ви все ж отримали помилку - це може означати, що кімната не була видалена після видалення всіх користувачів, що може призвести до значних витоків пам'яті.*
+**Примітка:** *If you receive this error, check the availability of the room by its room number. If the room exists, but you still receive the error, it may mean that the room was not deleted after all users were removed, which can lead to significant memory leaks.*
 
 **500 *Internal Server Error***
 ```json
@@ -760,15 +760,15 @@
 <details>
 <summary>
 
-#### Отримання завдань кімнати
+#### Receiving room assignments
 
 </summary>
 
 - **URL:** `/api/rooms/{room_id}/tasks`
-- **Метод:** <mark>GET</mark>
-- **Опис:** Список всіх завдань всередині кімнати.
+- **Method:** <mark>GET</mark>
+- **Description:** A list of all tasks inside the room.
 
-**Відповіді**
+**Responses**
 **200 *ОК***
 ```json
 [
@@ -809,14 +809,14 @@
 <details>
 <summary>
 
-#### Доєднання користувача до кімнати
+#### Join a user to a room
 
 </summary>
 
 - **URL:** `/api/rooms/join`
-- **Метод:** <mark>POST</mark>
-- **Опис:** Прикріплює певного користувача до певної кімнати.
-**Параметри запиту**
+- **Method:** <mark>POST</mark>
+- **Description:** Assigns a specific user to a specific room.
+**Request body**
 ```json
 {
     "user_id": 1,
@@ -824,7 +824,7 @@
 }
 ```
 
-**Відповіді**
+**Responses**
 **201 *ОК***
 ```json
 {
@@ -866,14 +866,14 @@ or
 <details>
 <summary>
 
-#### Від'єднання користувача від кімнати
+#### Disconnecting a user from a room
 
 </summary>
 
 - **URL:** `/api/rooms/remove`
-- **Методи:** <mark>DELETE</mark>
-- **Опис:** Від'єднує конкретного користувача від конкретної кімнати
-**Параметри запиту**
+- **Methodи:** <mark>DELETE</mark>
+- **Description:** Disconnects a specific user from a specific room
+**Request body**
 ```json
 {
     "user_id": 1,
@@ -881,7 +881,7 @@ or
 }
 ```
 
-**Відповіді**
+**Responses**
 **200 *OK***
 ```json
 {
@@ -889,7 +889,7 @@ or
 }
 ```
 **204 *No Content***
-**Примітка:** *Користувача від'єднано, а кімнату видалено, оскільки в ній не лишилось користувачів*
+**Примітка:** *The user is disconnected and the room is deleted because there are no users left in it*
 **404 *Not found**
 ```json
 {
