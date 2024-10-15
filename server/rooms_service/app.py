@@ -123,3 +123,12 @@ def delete_room(id:int):
     except Exception as e:
         db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
+    
+@app.route("/rooms/codes")
+def get_codes():
+    try:
+        codes = db.session.query(Room.code).all()
+        codes_list = [code[0] for code in codes]
+        return make_response(jsonify(codes_list), 200)
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
