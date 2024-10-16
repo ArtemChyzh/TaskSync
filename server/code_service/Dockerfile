@@ -3,5 +3,5 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY . .
-EXPOSE 100
-CMD [ "flask", "run", "--host=0.0.0.0", "--port=100" ]
+EXPOSE 200
+CMD [ "flask", "run", "--host=0.0.0.0", "--port=200" ]

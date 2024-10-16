@@ -8,6 +8,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("DB_ROOMS")
 db = SQLAlchemy(app)
 
 KEYS_SERVICE = "http://keys_service:4000"
+CODE_SERVICE = "http://codes_service:200"
 
 class Room(db.Model):
     __tablename__ = "rooms"
@@ -39,23 +40,35 @@ def test():
 def create_room():
     try:
         data = request.get_json()
-        if "user_id" not in data or "code" not in data:
-            return make_response(jsonify({"error": "Invalid data. 'user_id' and 'code' are required"}), 422)
-        room = Room.query.filter_by(code=data["code"]).first()
+        
+        if "user_id" not in data:
+            return make_response(jsonify({"error": "Invalid data. 'user_id' is required"}), 422)
+        
+        response = requests.get(f"{CODE_SERVICE}/code")
+        if response.status_code != 200:
+            return make_response(jsonify({"message": "Something went wrong when creating unique code. Try again later, please."}), 500)
+        
+        code = response.json().get("code")
+        
+        room = Room.query.filter_by(code=code).first()
         if room:
             return make_response(jsonify({"error": "Room already exists. 'code' must be unique"}), 409)
+        
         new_room = Room(
             user_id=data["user_id"],
-            code=data["code"],
-            title=data.get("title", data["code"]),
+            code=code,
+            title=data.get("title", code),  # Якщо назва не вказана, використовуємо код як заголовок
             description=data.get("description", "")
         )
         db.session.add(new_room)
         db.session.commit()
+        
         return make_response(jsonify({"message": "Room created successfully.", "room_id": new_room.id}), 201)
+    
     except Exception as e:
         db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
+
     
 @app.route("/rooms", methods=["GET"])
 def get_rooms():
