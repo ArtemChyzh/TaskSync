@@ -25,12 +25,6 @@ class UserRoom(db.Model):
 with app.app_context():
     db.create_all()
 
-@app.route("/", methods=["GET"])
-def test():
-    return make_response(jsonify({
-        "message": "Test route"
-    }), 200)
-
 @app.route("/users_rooms", methods=["POST"])
 def join_user():
     try:

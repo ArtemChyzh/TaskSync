@@ -3,7 +3,7 @@ from flask_jwt_extended import JWTManager, create_access_token
 from werkzeug.security import check_password_hash
 import requests
 
-USERS_SERVICE = "http://user_service:1000"
+USERS_SERVICE = "http://users_service:1000"
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "secretkey"
@@ -33,5 +33,8 @@ def login():
     if not check_password_hash(hash, password):
         return make_response(jsonify({"error": "Password is wrong."}), 401)
 
-    token = create_access_token(identity=username)
+    token = create_access_token(
+        identity=username,
+        additional_claims={"id": user_data.get("user_id")}
+        )
     return make_response(jsonify({"token": token}), 200)

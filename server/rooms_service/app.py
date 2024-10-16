@@ -30,12 +30,6 @@ class Room(db.Model):
 with app.app_context():
     db.create_all()
 
-@app.route("/", methods=["GET"])
-def test():
-    return make_response(jsonify({
-        "message": "Test route"
-        }), 200)
-
 @app.route("/rooms", methods=["POST"])
 def create_room():
     try:
@@ -67,15 +61,6 @@ def create_room():
     
     except Exception as e:
         db.session.rollback()
-        return make_response(jsonify({"error": str(e)}), 500)
-
-    
-@app.route("/rooms", methods=["GET"])
-def get_rooms():
-    try:
-        rooms = Room.query.all()
-        return make_response(jsonify([room.json() for room in rooms]), 200)
-    except Exception as e:
         return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/rooms/<int:id>", methods=["GET"])

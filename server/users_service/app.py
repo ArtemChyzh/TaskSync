@@ -51,15 +51,6 @@ def create_user():
     except Exception as e:
         db.session.rollback()
         return make_response(jsonify({"error": str(e)}), 500)
-        
-@app.route("/users", methods=["GET"])
-def get_users():
-    try:
-        users = User.query.all()
-        return make_response(jsonify([user.json() for user in users]), 200)
-    
-    except Exception as e:
-        return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/users/<int:id>", methods=["GET"])
 def get_user_by_id(id):

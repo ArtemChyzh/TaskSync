@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request, make_response
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt, get_jwt_identity 
 import requests
 
 app = Flask(__name__)
 
+AUTHENTICATION_SERVICE = "http://authentication_service:100"
 USERS_SERVICE = "http://users_service:1000"
 ROOMS_SERVICE = "http://rooms_service:2000"
 TASKS_SERVICE = "http://tasks_service:3000"
@@ -10,14 +12,18 @@ KEYS_SERVICE = "http://keys_service:4000"
 
 #--Users--
 
-#Get users or add an user
-@app.route("/api/users", methods=["POST", "GET"])
-def users():
-    if request.method == "POST":
-        data = request.get_json()
-        response = requests.post(f"{USERS_SERVICE}/users", json=data)
-    else:
-        response = requests.get(f"{USERS_SERVICE}/users")
+#Login user
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    response = requests.post(f"{AUTHENTICATION_SERVICE}/login", json=data)
+    return make_response(jsonify(response.json()), response.status_code)
+
+#Register user
+@app.route("/api/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    response = requests.post(f"{USERS_SERVICE}/users", json=data)
     return make_response(jsonify(response.json()), response.status_code)
 
 #Get user by username
@@ -55,11 +61,8 @@ def get_user_tasks(user_id):
 #Get rooms or add a room
 @app.route("/api/rooms", methods=["GET", "POST"])
 def rooms():
-    if request.method == "GET":
-        response = requests.get(f"{ROOMS_SERVICE}/rooms")
-    else:
-        data = request.get_json()
-        response = requests.post(f"{ROOMS_SERVICE}/rooms", json=data)
+    data = request.get_json()
+    response = requests.post(f"{ROOMS_SERVICE}/rooms", json=data)
     return make_response(jsonify(response.json()), response.status_code)
 
 #Get room by code
@@ -108,11 +111,8 @@ def remove():
 #Get all tasks or create new
 @app.route("/api/tasks", methods=["GET", "POST"])
 def tasks():
-    if request.method == "POST":
-        data = request.get_json()
-        response = requests.post(f"{TASKS_SERVICE}/tasks", json=data)
-    else:
-        response = requests.get(f"{TASKS_SERVICE}/tasks")
+    data = request.get_json()
+    response = requests.post(f"{TASKS_SERVICE}/tasks", json=data)
     return make_response(jsonify(response.json()), response.status_code)
 
 #Get, edit or delete mentioned task

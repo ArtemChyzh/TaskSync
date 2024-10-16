@@ -73,14 +73,6 @@ def create_task():
     
     finally:
         db.session.close()
-
-@app.route("/tasks", methods=["GET"])
-def get_tasks():
-    try:
-        tasks = Task.query.all()
-        return make_response(jsonify([task.json() for task in tasks]), 200)
-    except Exception as e:
-        return make_response(jsonify({"error": str(e)}), 500)
     
 @app.route("/tasks/<int:id>", methods=["GET"])
 def get_task_by_id(id:int):
