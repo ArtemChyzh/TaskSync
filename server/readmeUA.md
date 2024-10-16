@@ -57,43 +57,6 @@
 <details>
 <summary>
 
-#### Отримання всіх користувачів
-
-</summary>
-
-- **URL:** `api/users`
-- **Метод**: <mark>GET</mark>
-- **Опис**: Отримує список всіх користувачів
-
-**Відповіді:**
-**200 *OK***
-```json
-[
-    {
-        "user_id": 1,
-        "username": "user001",
-        "password": "StrongPassword321!",
-        "email": "user001@fakemail.com"
-    },
-    {
-        "user_id": 2,
-        "username": "user002",
-        "password": "StrongPassword321!",
-        "email": "user002@fakemail.com"
-    }
-]
-```
-**500 *Internal Server Error***
-```json
-{
-    "error": "details"
-}
-```
-</details>
-
-<details>
-<summary>
-
 #### Отримання користувача
 
 </summary>
@@ -336,76 +299,6 @@
 <details>
 <summary>
 
-#### Отримання всіх завдань
-
-</summary>
-
-- **URL:** `/api/tasks`
-- **Методи:** <mark>GET</mark>
-- **Опис:** Отримує список всіх завдань
-
-**Відповіді**
-**200 *OK***
-```json
-[
-  {
-    "id": 1,
-    "title": "Fix the bug in the authentication system",
-    "description": "There's a critical bug in the login feature that prevents users from logging in under certain conditions.",
-    "user_id": 2,
-    "room_id": 1,
-    "deadline": "2024-10-20T10:00:00Z",
-    "status": "pending"
-  },
-  {
-    "id": 2,
-    "title": "Create project documentation",
-    "description": "Document the API endpoints, data models, and overall project architecture for future reference.",
-    "user_id": 4,
-    "room_id": 3,
-    "deadline": "2024-10-22T16:30:00Z",
-    "status": "in_progress"
-  },
-  {
-    "id": 3,
-    "title": "Design new homepage layout",
-    "description": "Work on the redesign of the main website page to improve user experience and increase conversion rates.",
-    "user_id": 3,
-    "room_id": 2,
-    "deadline": "2024-10-25T08:00:00Z",
-    "status": "pending"
-  },
-  {
-    "id": 4,
-    "title": "Optimize database queries",
-    "description": "Refactor database queries in the tasks service to improve performance for larger datasets.",
-    "user_id": 1,
-    "room_id": 4,
-    "deadline": "2024-10-23T12:00:00Z",
-    "status": "completed"
-  },
-  {
-    "id": 5,
-    "title": "Prepare user feedback report",
-    "description": "Analyze feedback from beta testers and compile a report on their suggestions and concerns.",
-    "user_id": 5,
-    "room_id": 2,
-    "deadline": "2024-10-28T14:45:00Z",
-    "status": "pending"
-  }
-]
-```
-**500 *Internal Server Error***
-```json
-{
-    "error": "details"
-}
-```
-</details>
-
-<details>
-<summary>
-
 #### Отримання конкретного завдання за ID
 
 </summary>
@@ -560,52 +453,6 @@
 }
 ```
 **500 *Internal Service Error***
-```json
-{
-    "error": "details"
-}
-```
-</details>
-
-<details>
-<summary>
-
-#### Отримання кімнат
-
-</summary>
-
-- **URL:** `/api/rooms`
-- **Метод:** <mark>GET</mark>
-- **Опис:** Список всіх кімнат, що існують
-
-**Відповіді**
-**200 *ОК***
-```json
-[
-  {
-    "id": 1,
-    "user_id": 2,
-    "code": "ABC123",
-    "title": "Project Planning",
-    "description": "Room for project planning and task coordination."
-  },
-  {
-    "id": 2,
-    "user_id": 3,
-    "code": "XYZ456",
-    "title": "Design Team",
-    "description": "Room for the design team to share ideas and collaborate."
-  },
-  {
-    "id": 3,
-    "user_id": 4,
-    "code": "LMN789",
-    "title": "Development Room",
-    "description": "Room for developers to discuss progress and technical challenges."
-  }
-]
-```
-**500 *Internal Server Error***
 ```json
 {
     "error": "details"
